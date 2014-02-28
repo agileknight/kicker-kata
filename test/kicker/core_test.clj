@@ -2,6 +2,8 @@
   (:require [clojure.test :refer :all]
             [kicker.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest events-matching-test
+  (testing "Single event returned when pattern is empty."
+    (let [event-captor (create-event-captor) bus (create-bus [event-captor])]
+      ((:event bus) "event")
+      (is (= ["event"] ((:events-matching event-captor) ""))))))
