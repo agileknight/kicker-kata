@@ -5,7 +5,7 @@
   []
   (let [captured (atom [])]
     {:event (fn [event] (swap! captured conj event))
-     :events-matching (fn [pattern] @captured)
+     :events-matching (fn [pattern] (filter #(if (= :all pattern) true (.startsWith % pattern)) @captured))
      :wants? (fn [event] true)}))
 
 (defn create-bus
