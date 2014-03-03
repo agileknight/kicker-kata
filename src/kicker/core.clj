@@ -18,9 +18,15 @@
                        (if ((:wants? listener) event)
                          ((:event listener) event bus))))})
 
+(defn increase-score
+  [score team]
+  (assoc score team (+ 1 (get score team))))
+
 (defn make-score-counter
   []
-  {:score (fn [] {:black 0 :white 0}) })
+  (let [score (atom {:black 0 :white 0})]
+    {:score (fn [] @score)
+     :goal (fn [team] (swap! score increase-score team))}))
 
 (defn create-kicker
   []

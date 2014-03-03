@@ -16,10 +16,19 @@
       ((:event bus) "blue" bus)
       (is (= ["blue"] ((:events-matching event-captor) "blue"))))))
 
+(deftest increase-score-test
+  (testing "Increases score by 1."
+    (is (= {:black 1 :white 0} (increase-score {:black 0 :white 0} :black)))
+    (is (= {:black 2 :white 0} (increase-score {:black 1 :white 0} :black)))))
+
 (deftest score-counter-test
   (testing "Initially has zero score."
     (let [counter (make-score-counter)]
-      (is (= {:black 0 :white 0} ((:score counter)))))))
+      (is (= {:black 0 :white 0} ((:score counter))))))
+  (testing "One black goal"
+    (let [counter (make-score-counter)]
+      ((:goal counter) :black)
+      (is (= {:black 1 :white 0} ((:score counter)))))))
 
 (deftest integration-test
   (testing "First goal triggers score."
