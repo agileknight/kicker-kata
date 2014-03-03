@@ -31,6 +31,12 @@
       ((:goal counter) :black)
       (is (= {:black 1 :white 0} ((:score counter)))))))
 
+(deftest statistics-test
+  (testing "Goal triggers score."
+    (let [stats (make-statistics)]
+      (is (= [{:type "score" :content {:black 1 :white 0}}] ((:goal stats) :black)))
+      (is (= [{:type "score" :content {:black 2 :white 0}}] ((:goal stats) :black))))))
+
 (deftest integration-test
   (testing "First goal triggers score."
     (let [event-captor (create-event-captor)

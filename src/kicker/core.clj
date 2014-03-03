@@ -28,6 +28,11 @@
     {:score (fn [] @score)
      :goal (fn [team] (swap! score increase-score team))}))
 
+(defn make-statistics
+  []
+  (let [score-counter (make-score-counter)]
+    {:goal (fn [team] (do ((:goal score-counter) team) [{:type "score" :content ((:score score-counter))}]))}))
+
 (defn create-kicker
   []
   {:event (fn [event bus] ((:event bus) "score:{'black':1, 'white':0}" bus))
