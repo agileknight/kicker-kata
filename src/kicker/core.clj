@@ -18,6 +18,10 @@
                        (if ((:wants? listener) event)
                          ((:event listener) event bus))))})
 
+(defn make-score-counter
+  []
+  {:score (fn [] {:black 0 :white 0}) })
+
 (defn create-kicker
   []
   {:event (fn [event bus] ((:event bus) "score:{'black':1, 'white':0}" bus))

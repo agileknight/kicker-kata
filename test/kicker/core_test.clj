@@ -16,10 +16,24 @@
       ((:event bus) "blue" bus)
       (is (= ["blue"] ((:events-matching event-captor) "blue"))))))
 
+(deftest score-counter-test
+  (testing "Initially has zero score."
+    (let [counter (make-score-counter)]
+      (is (= {:black 0 :white 0} ((:score counter)))))))
+
 (deftest integration-test
   (testing "First goal triggers score."
     (let [event-captor (create-event-captor)
           kicker (create-kicker)
           bus (create-bus [event-captor kicker])]
       ((:event bus) "goal:black" bus)
-      (is (= ["score:{'black':1, 'white':0}"] ((:events-matching event-captor) "score"))))))
+      (is (= ["score:{'black':1, 'white':0}"] ((:events-matching event-captor) "score")))))
+  '(testing "Kicker counts score for team."
+    (let [event-captor (create-event-captor)
+          kicker (create-kicker)
+          bus (create-bus [event-captor kicker])]
+      ((:event bus) "goal:black" bus)
+      ((:event bus) "goal:black" bus)
+      (is (= "score:{'black':2, 'white':0}" (last ((:events-matching event-captor) "score"))))))
+  '(testing "Next"
+    (is (= 1 1))))
