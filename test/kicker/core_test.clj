@@ -19,7 +19,8 @@
 (deftest increase-score-test
   (testing "Increases score by 1."
     (is (= {:black 1 :white 0} (increase-score {:black 0 :white 0} :black)))
-    (is (= {:black 2 :white 0} (increase-score {:black 1 :white 0} :black)))))
+    (is (= {:black 2 :white 0} (increase-score {:black 1 :white 0} :black)))
+    (is (= {:black 0 :white 3} (increase-score {:black 0 :white 2} :white)))))
 
 (deftest score-counter-test
   (testing "Initially has zero score."
