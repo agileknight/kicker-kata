@@ -53,12 +53,10 @@
           bus (create-bus [event-captor kicker])]
       ((:event bus) "goal:black" bus)
       (is (= ["score:{'black':1, 'white':0}"] ((:events-matching event-captor) "score")))))
-  '(testing "Kicker counts score for team."
+  (testing "Kicker counts score for team."
     (let [event-captor (create-event-captor)
           kicker (create-kicker)
           bus (create-bus [event-captor kicker])]
       ((:event bus) "goal:black" bus)
       ((:event bus) "goal:black" bus)
-      (is (= "score:{'black':2, 'white':0}" (last ((:events-matching event-captor) "score"))))))
-  '(testing "Next"
-    (is (= 1 1))))
+      (is (= "score:{'black':2, 'white':0}" (last ((:events-matching event-captor) "score")))))))

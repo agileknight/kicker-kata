@@ -48,10 +48,20 @@
   [event]
   ((get event-printers (:type event)) (:content event)))
 
+(defn is-goal-event?
+  [event]
+  (start-matches? event ["goal"]))
+
+(defn handle-goal
+  [stats event bus]
+  (doseq [out-event ((:goal stats) (parse-goal-event event))]
+    ((:event bus) (print-event out-event) bus)))
+
 (defn create-kicker
   []
-  {:event (fn [event bus] ((:event bus) "score:{'black':1, 'white':0}" bus))
-   :wants? (fn [event] (start-matches? event ["goal"]))})
+  (let [statistics (make-statistics)]
+    {:event (fn [event bus] (cond (is-goal-event? event) (handle-goal statistics event bus) ))
+    :wants? (fn [event] (is-goal-event? event))}))
 
 (defn -main
   "I don't do a whole lot ... yet."
