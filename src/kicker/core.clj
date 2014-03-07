@@ -33,6 +33,10 @@
   (let [score-counter (make-score-counter)]
     {:goal (fn [team] (do ((:goal score-counter) team) [{:type "score" :content ((:score score-counter))}]))}))
 
+(defn parse-goal-event
+  [event]
+  (if (.contains event "black") :black :white))
+
 (defn create-kicker
   []
   {:event (fn [event bus] ((:event bus) "score:{'black':1, 'white':0}" bus))
