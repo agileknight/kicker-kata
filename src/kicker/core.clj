@@ -37,6 +37,17 @@
   [event]
   (if (.contains event "black") :black :white))
 
+(defn print-score
+  [score]
+  (format "score:{'black':%d, 'white':%d}" (:black score) (:white score)))
+
+(def event-printers
+  {"score" print-score})
+
+(defn print-event
+  [event]
+  ((get event-printers (:type event)) (:content event)))
+
 (defn create-kicker
   []
   {:event (fn [event bus] ((:event bus) "score:{'black':1, 'white':0}" bus))

@@ -38,9 +38,13 @@
       (is (= [{:type "score" :content {:black 2 :white 0}}] ((:goal stats) :black))))))
 
 (deftest goal-event-parsing-test
-  (testing "black goal parse correctly"
+  (testing "parse goal events correctly"
     (is (= :black (parse-goal-event "goal:black")))
     (is (= :white (parse-goal-event "goal:white")))))
+
+(deftest event-printing-test
+  (testing "print score event correctly"
+    (is (= "score:{'black':1, 'white':3}" (print-event {:type "score" :content {:black 1 :white 3}})))))
 
 (deftest integration-test
   (testing "First goal triggers score."
