@@ -31,11 +31,20 @@
       ((:goal counter) :black)
       (is (= {:black 1 :white 0} ((:score counter)))))))
 
-(deftest statistics-test
+(defn goals
+  [stats teams]
+  (->> (map #((:goal stats) %) teams)
+       (reduce conj)
+       flatten))
+
+(deftest acceptance-test
   (testing "Goal triggers score."
     (let [stats (make-statistics)]
       (is (= [{:type "score" :content {:black 1 :white 0}}] ((:goal stats) :black)))
-      (is (= [{:type "score" :content {:black 2 :white 0}}] ((:goal stats) :black))))))
+      (is (= [{:type "score" :content {:black 2 :white 0}}] ((:goal stats) :black)))))
+  (testing "Game ends when one team gets 6 goals"
+    (let [stats (make-statistics)]
+      (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black)))))))))
 
 (deftest goal-event-parsing-test
   (testing "parse goal events correctly"
@@ -46,7 +55,7 @@
   (testing "print score event correctly"
     (is (= "score:{'black':1, 'white':3}" (print-event {:type "score" :content {:black 1 :white 3}})))))
 
-(deftest integration-test
+(deftest system-test
   (testing "First goal triggers score."
     (let [event-captor (create-event-captor)
           kicker (create-kicker)
