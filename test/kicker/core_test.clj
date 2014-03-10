@@ -36,23 +36,23 @@
       ((:reset counter))
       (is (= {:black 0 :white 0} ((:score counter)))))))
 
-(defn make-score-counter-mock
+(defn make-callback-mock
   []
   (let [was-called (atom false)]
-    {:reset (fn [] (reset! was-called true))
+    {:call (fn [] (reset! was-called true))
      :was-called? (fn [] @was-called)}))
 
 (deftest game-listener-test
   (testing "Does nothing when game does not end"
-    (let [mock-score-counter (make-score-counter-mock)
-          game-listener (make-game-listener mock-score-counter)]
+    (let [callback (make-callback-mock)
+          game-listener (make-game-listener (:call callback))]
       ((:score-changed game-listener) {:black 5 :white 5})
-      (is (false? ((:was-called? mock-score-counter))))))
+      (is (false? ((:was-called? callback))))))
   (testing "Resets score counter when game ends"
-    (let [mock-score-counter (make-score-counter-mock)
-          game-listener (make-game-listener mock-score-counter)]
+    (let [callback (make-callback-mock)
+          game-listener (make-game-listener (:call callback))]
       ((:score-changed game-listener) {:black 6 :white 4})
-      (is (true? ((:was-called? mock-score-counter)))))))
+      (is (true? ((:was-called? callback)))))))
 
 (defn goals
   [stats teams]

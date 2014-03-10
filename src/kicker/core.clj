@@ -30,14 +30,14 @@
      :reset (fn [] (reset! score {:black 0 :white 0}))}))
 
 (defn make-game-listener
-  [score-counter]
+  [callback]
   {:score-changed (fn [new-score] (if (or (>= (:black new-score) 6) (>= (:white new-score) 6))
-                                   ((:reset score-counter))))})
+                                   (callback)))})
 
 (defn make-statistics
   []
   (let [score-counter (make-score-counter)
-        game-listener (make-game-listener score-counter)]
+        game-listener (make-game-listener (fn [] ((:reset score-counter))))]
     {:goal (fn [team]
              (let [new-score (do ((:goal score-counter) team) ((:score score-counter)))]
                ((:score-changed game-listener) new-score)
