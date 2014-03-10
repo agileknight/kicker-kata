@@ -29,7 +29,30 @@
   (testing "One black goal"
     (let [counter (make-score-counter)]
       ((:goal counter) :black)
-      (is (= {:black 1 :white 0} ((:score counter)))))))
+      (is (= {:black 1 :white 0} ((:score counter))))))
+  (testing "Reset resets score"
+    (let [counter (make-score-counter)]
+      ((:goal counter) :black)
+      ((:reset counter))
+      (is (= {:black 0 :white 0} ((:score counter)))))))
+
+(defn make-score-counter-mock
+  []
+  (let [was-called (atom false)]
+    {:reset (fn [] (reset! was-called true))
+     :was-called? (fn [] @was-called)}))
+
+(deftest game-listener-test
+  (testing "Does nothing when game does not end"
+    (let [mock-score-counter (make-score-counter-mock)
+          game-listener (make-game-listener mock-score-counter)]
+      ((:score-changed game-listener) {:black 5 :white 5})
+      (is (false? ((:was-called? mock-score-counter))))))
+  (testing "Resets score counter when game ends"
+    (let [mock-score-counter (make-score-counter-mock)
+          game-listener (make-game-listener mock-score-counter)]
+      ((:score-changed game-listener) {:black 6 :white 4})
+      (is (true? ((:was-called? mock-score-counter)))))))
 
 (defn goals
   [stats teams]
