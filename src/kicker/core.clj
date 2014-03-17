@@ -18,15 +18,23 @@
                        (if ((:wants? listener) event)
                          ((:event listener) event bus))))})
 
-(defn increase-score
-  [score team]
-  (assoc score team (+ 1 (get score team))))
+(defn increase-in-map
+  [map key]
+  (assoc map key (+ 1 (get map key))))
+
+(defn make-player-board
+  []
+  (let [board (atom {})]
+    {:register (fn [name] (swap! board assoc name 0))
+     :win (fn [name] (swap! board increase-in-map name))
+     }
+    ))
 
 (defn make-score-counter
   []
   (let [score (atom {:black 0 :white 0})]
     {:score (fn [] @score)
-     :goal (fn [team] (swap! score increase-score team))
+     :goal (fn [team] (swap! score increase-in-map team))
      :reset (fn [] (reset! score {:black 0 :white 0}))}))
 
 (defn make-game-listener
@@ -39,9 +47,13 @@
   (let [score-counter (make-score-counter)
         game-listener (make-game-listener (fn [] ((:reset score-counter))))]
     {:goal (fn [team]
-             (let [new-score (do ((:goal score-counter) team) ((:score score-counter)))]
+             (let [new-score ((:goal score-counter) team)]
                ((:score-changed game-listener) new-score)
-                 [{:type "score" :content new-score}]))}))
+               [{:type "score" :content new-score}]))
+     :register (fn [team position player]
+                 ())
+
+     }))
 
 (defn parse-goal-event
   [event]

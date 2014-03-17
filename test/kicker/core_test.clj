@@ -36,6 +36,16 @@
       ((:reset counter))
       (is (= {:black 0 :white 0} ((:score counter)))))))
 
+(deftest player-board-test
+  (testing "Registers a player on the board"
+    (let [board (make-player-board)]
+      (is (= {"John" 0} ((:register board) "John")))))
+  (testing "Player wins a game"
+    (let [board (make-player-board)]
+      ((:register board) "John")
+      (is (= {"John" 1} ((:win board) "John")))))
+  )
+
 (defn make-callback-mock
   []
   (let [was-called (atom false)]
@@ -60,6 +70,10 @@
        (reduce conj)
        flatten))
 
+(defn wins-game
+  [stats team]
+  (goals stats (take 6 (repeat team))))
+
 (deftest acceptance-test
   (testing "Goal triggers score."
     (let [stats (make-statistics)]
@@ -67,7 +81,15 @@
       (is (= [{:type "score" :content {:black 2 :white 0}}] ((:goal stats) :black)))))
   (testing "Game ends when one team gets 6 goals"
     (let [stats (make-statistics)]
-      (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black)))))))))
+      (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black))))))))
+  '(testing "Prints player stats after team wins"
+    (let [stats (make-statistics)]
+      ((:register stats) :black :offense "Joe")
+      ((:register stats) :black :defense "Jack")
+      ((:register stats) :white :offnse "Daniel")
+      ((:register stats) :white :defense "Dennis")
+      (is (= {:type "player-ranking" :content {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}}
+             (last (wins-game stats :black)))))))
 
 (deftest goal-event-parsing-test
   (testing "parse goal events correctly"
