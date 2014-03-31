@@ -18,6 +18,10 @@
                        (if ((:wants? listener) event)
                          ((:event listener) event bus))))})
 
+(defn increase-score
+  [score-map team]
+  (increase-in-map score-map team))
+
 (defn increase-in-map
   [map key]
   (assoc map key (+ 1 (get map key))))
@@ -41,19 +45,22 @@
   [callback]
   {:score-changed (fn [new-score] (if (or (>= (:black new-score) 6) (>= (:white new-score) 6))
                                    (callback)))})
+(defprotocol KickerEventListener
+  "Listens to kicker events and returns the resulting events."
+  (goal [this team])
+  (register [this team position player]))
+
+(deftype Statistics-Impl [score-counter game-listener]
+  KickerEventListener
+  (goal [this team] (let [new-score ((:goal score-counter) team)]
+                 ((:score-changed game-listener) new-score)
+                 [{:type "score" :content new-score}])))
 
 (defn make-statistics
   []
   (let [score-counter (make-score-counter)
         game-listener (make-game-listener (fn [] ((:reset score-counter))))]
-    {:goal (fn [team]
-             (let [new-score ((:goal score-counter) team)]
-               ((:score-changed game-listener) new-score)
-               [{:type "score" :content new-score}]))
-     :register (fn [team position player]
-                 ())
-
-     }))
+    (Statistics-Impl. score-counter game-listener)))
 
 (defn parse-goal-event
   [event]

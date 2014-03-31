@@ -66,7 +66,7 @@
 
 (defn goals
   [stats teams]
-  (->> (map #((:goal stats) %) teams)
+  (->> (map #(goal stats %) teams)
        (reduce conj)
        flatten))
 
@@ -77,8 +77,8 @@
 (deftest acceptance-test
   (testing "Goal triggers score."
     (let [stats (make-statistics)]
-      (is (= [{:type "score" :content {:black 1 :white 0}}] ((:goal stats) :black)))
-      (is (= [{:type "score" :content {:black 2 :white 0}}] ((:goal stats) :black)))))
+      (is (= [{:type "score" :content {:black 1 :white 0}}] (goal stats :black)))
+      (is (= [{:type "score" :content {:black 2 :white 0}}] (goal stats :black)))))
   (testing "Game ends when one team gets 6 goals"
     (let [stats (make-statistics)]
       (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black))))))))
