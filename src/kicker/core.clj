@@ -18,13 +18,13 @@
                        (if ((:wants? listener) event)
                          ((:event listener) event bus))))})
 
-(defn increase-score
-  [score-map team]
-  (increase-in-map score-map team))
-
 (defn increase-in-map
   [map key]
   (assoc map key (+ 1 (get map key))))
+
+(defn increase-score
+  [score-map team]
+  (increase-in-map score-map team))
 
 (defn make-player-board
   []
@@ -83,7 +83,7 @@
 
 (defn handle-goal
   [stats event bus]
-  (doseq [out-event ((:goal stats) (parse-goal-event event))]
+  (doseq [out-event (goal stats (parse-goal-event event))]
     ((:event bus) (print-event out-event) bus)))
 
 (defn create-kicker
