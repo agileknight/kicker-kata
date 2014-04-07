@@ -46,6 +46,13 @@
       (is (= {"John" 1} ((:win board) "John")))))
   )
 
+(deftest team-info-test
+  (testing "Both positions registered in team"
+    (let [team-info (make-team-info)]
+      (register team-info :black :offense "John")
+      (register team-info :black :defense "Jack")
+      (is (= {:black {:offense "John" :defense "Jack"}} (current-teams team-info))))))
+
 (defn make-callback-mock
   []
   (let [was-called (atom false)]
@@ -84,10 +91,10 @@
       (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black))))))))
   '(testing "Prints player stats after team wins"
     (let [stats (make-statistics)]
-      ((:register stats) :black :offense "Joe")
-      ((:register stats) :black :defense "Jack")
-      ((:register stats) :white :offnse "Daniel")
-      ((:register stats) :white :defense "Dennis")
+      (register stats :black :offense "Joe")
+      (register stats :black :defense "Jack")
+      (register stats :white :offnse "Daniel")
+      (register stats :white :defense "Dennis")
       (is (= {:type "player-ranking" :content {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}}
              (last (wins-game stats :black)))))))
 

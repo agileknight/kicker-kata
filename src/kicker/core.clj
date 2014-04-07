@@ -34,6 +34,22 @@
      }
     ))
 
+(defprotocol RegistrationListener
+  "Listens to registration events."
+  (register [this team position player-name]))
+
+(defprotocol TeamInfo
+  "Current team composition."
+  (current-teams [this]))
+
+(defn make-team-info
+  []
+  (let [team-state (atom {})]
+    (reify RegistrationListener
+      (register [this team position player-name] (swap! team-state assoc-in [team position] player-name))
+      TeamInfo
+    (current-teams [this] @team-state))))
+
 (defn make-score-counter
   []
   (let [score (atom {:black 0 :white 0})]
@@ -47,8 +63,7 @@
                                    (callback)))})
 (defprotocol KickerEventListener
   "Listens to kicker events and returns the resulting events."
-  (goal [this team])
-  (register [this team position player]))
+  (goal [this team]))
 
 (deftype Statistics-Impl [score-counter game-listener]
   KickerEventListener
