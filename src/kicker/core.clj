@@ -65,6 +65,10 @@
   "Listens to kicker events and returns the resulting events."
   (goal [this team]))
 
+(defprotocol EventReader
+  "Read latest events."
+  (latest-events [this]))
+
 (deftype Statistics-Impl [score-counter game-listener]
   KickerEventListener
   (goal [this team] (let [new-score ((:goal score-counter) team)]
