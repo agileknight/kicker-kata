@@ -6,14 +6,20 @@
 (defn make-capturer
   []
   (let [events (atom [])]
-    (reify EventReader
-      (latest-events [this] (let [result @events] (reset! events []))))))
+    (reify
+      EventListener
+      (fire [this event] (swap! events conj event))
+      EventReader
+      (latest-events [this] (let [result @events]
+                              (reset! events [])
+                              result)))))
 
 (def ^:dynamic *score-event-capturer*)
 
 (defn setup-score-event-capturer
-  []
-  (binding [*score-event-capturer* make-capturer]))
+  [f]
+  (binding [*score-event-capturer* (make-capturer)]
+    (f)))
 
 (use-fixtures :each setup-score-event-capturer)
 
@@ -22,16 +28,16 @@
     (let [stats (make-statistics *score-event-capturer*)]
       (goal stats :black)
       (goal stats :black)
-      (is (= [{:type "score" :content {:black 1 :white 0}}
-              {:type "score" :content {:black 2 :white 0}}] (latest-events *score-event-capturer*)))))
-  (testing "Game ends when one team gets 6 goals"
-    (let [stats (make-statistics)]
+      (is (= [{:black 1 :white 0}
+              {:black 2 :white 0}] (latest-events *score-event-capturer*)))))
+  '(testing "Game ends when one team gets 6 goals"
+    (let [stats (make-statistics *score-event-capturer*)]
       (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black))))))))
   '(testing "Prints player stats after team wins"
-    (let [stats (make-statistics)]
-      (register stats :black :offense "Joe")
-      (register stats :black :defense "Jack")
-      (register stats :white :offnse "Daniel")
-      (register stats :white :defense "Dennis")
-      (is (= {:type "player-ranking" :content {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}}
-             (last (wins-game stats :black)))))))
+     (let [stats (make-statistics)]
+       (register stats :black :offense "Joe")
+       (register stats :black :defense "Jack")
+       (register stats :white :offnse "Daniel")
+       (register stats :white :defense "Dennis")
+       (is (= {:type "player-ranking" :content {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}}
+              (last (wins-game stats :black)))))))

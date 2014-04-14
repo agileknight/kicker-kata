@@ -1,6 +1,14 @@
 (ns kicker.core
   (:gen-class))
 
+(defprotocol EventReader
+  "Read latest events."
+  (latest-events [this]))
+
+(defprotocol EventListener
+  "Listens to events."
+  (fire [this event]))
+
 (defn start-matches?
   [input [& patterns]]
   (true? (some #(.startsWith input %) patterns)))
@@ -51,10 +59,12 @@
     (current-teams [this] @team-state))))
 
 (defn make-score-counter
-  []
+  [score-event-listener]
   (let [score (atom {:black 0 :white 0})]
     {:score (fn [] @score)
-     :goal (fn [team] (swap! score increase-in-map team))
+     :goal (fn [team] (do (swap! score increase-in-map team)
+                         (fire score-event-listener @score)
+                         @score))
      :reset (fn [] (reset! score {:black 0 :white 0}))}))
 
 (defn make-game-listener
@@ -65,10 +75,6 @@
   "Listens to kicker events and returns the resulting events."
   (goal [this team]))
 
-(defprotocol EventReader
-  "Read latest events."
-  (latest-events [this]))
-
 (deftype Statistics-Impl [score-counter game-listener]
   KickerEventListener
   (goal [this team] (let [new-score ((:goal score-counter) team)]
@@ -76,8 +82,8 @@
                  [{:type "score" :content new-score}])))
 
 (defn make-statistics
-  []
-  (let [score-counter (make-score-counter)
+  [score-event-listener]
+  (let [score-counter (make-score-counter score-event-listener)
         game-listener (make-game-listener (fn [] ((:reset score-counter))))]
     (Statistics-Impl. score-counter game-listener)))
 
