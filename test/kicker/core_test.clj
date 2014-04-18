@@ -73,9 +73,7 @@
 
 (defn goals
   [stats teams]
-  (->> (map #(goal stats %) teams)
-       (reduce conj)
-       flatten))
+  (doall (map #(goal stats %) teams)))
 
 (defn wins-game
   [stats team]
