@@ -35,15 +35,21 @@
   (binding [*stats* (make-statistics *score-event-capturer*)]
     (f)))
 
-(use-fixtures :each setup-score-event-capturer setup-statistics-instance)
+(defn setup
+  [f]
+  ((compose-fixtures setup-score-event-capturer setup-statistics-instance) f))
+
+(defmacro with-fixtures
+  [fixtures doc & body]
+  `(testing ~doc (~fixtures (fn [] (do ~@body)))))
 
 (deftest acceptance-test
-  (testing "Goal triggers score."
+  (with-fixtures setup "Goal triggers score."
     (goal *stats* :black)
     (goal *stats* :black)
     (is (= [{:black 1 :white 0}
             {:black 2 :white 0}] (latest-events *score-event-capturer*))))
-  (testing "New game starts when one team gets 6 goals"
+  (with-fixtures setup "New game starts when one team gets 6 goals"
     (goals *stats* (take 7 (repeat :black)))
     (is (= {:black 1 :white 0} (last (latest-events *score-event-capturer*)))))
   '(testing "Prints player stats after team wins"
