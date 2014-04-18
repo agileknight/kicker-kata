@@ -75,17 +75,15 @@
   "Listens to kicker events and returns the resulting events."
   (goal [this team]))
 
-(deftype Statistics-Impl [score-counter game-listener]
-  KickerEventListener
-  (goal [this team] (let [new-score ((:goal score-counter) team)]
-                 ((:score-changed game-listener) new-score)
-                 [{:type "score" :content new-score}])))
-
 (defn make-statistics
   [score-event-listener]
   (let [score-counter (make-score-counter score-event-listener)
         game-listener (make-game-listener (fn [] ((:reset score-counter))))]
-    (Statistics-Impl. score-counter game-listener)))
+    (reify
+      KickerEventListener
+      (goal [this team] (let [new-score ((:goal score-counter) team)]
+                          ((:score-changed game-listener) new-score)
+                          [{:type "score" :content new-score}])))))
 
 (defn parse-goal-event
   [event]
