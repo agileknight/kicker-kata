@@ -21,15 +21,20 @@
   (binding [*score-event-capturer* (make-capturer)]
     (f)))
 
-(use-fixtures :each setup-score-event-capturer)
+(def ^:dynamic *stats*)
+
+(defn setup-statistics-instance
+  [f]
+  (binding [*stats* (make-statistics *score-event-capturer*)]))
+
+(use-fixtures :each setup-score-event-capturer setup-statistics-instance)
 
 (deftest acceptance-test
   (testing "Goal triggers score."
-    (let [stats (make-statistics *score-event-capturer*)]
-      (goal stats :black)
-      (goal stats :black)
-      (is (= [{:black 1 :white 0}
-              {:black 2 :white 0}] (latest-events *score-event-capturer*)))))
+    (goal *stats* :black)
+    (goal *stats* :black)
+    (is (= [{:black 1 :white 0}
+            {:black 2 :white 0}] (latest-events *score-event-capturer*))))
   '(testing "Game ends when one team gets 6 goals"
     (let [stats (make-statistics *score-event-capturer*)]
       (is (= {:type "score" :content {:black 1 :white 0}} (last (goals stats (take 7 (repeat :black))))))))
