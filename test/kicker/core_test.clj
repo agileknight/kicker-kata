@@ -62,7 +62,7 @@
   '(with-fixtures setup "Prints player stats after team wins"
     (register *stats* :black :offense "Joe")
     (register *stats* :black :defense "Jack")
-    (register *stats* :white :offnse "Daniel")
+    (register *stats* :white :offense "Daniel")
     (register *stats* :white :defense "Dennis")
     (wins-game *stats* :black)
     (is (= {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}

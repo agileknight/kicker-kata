@@ -24,7 +24,7 @@
 (defn make-player-board
   []
   (let [board (atom {})]
-    {:register (fn [team position player-name] (swap! board assoc name 0))
+    {:register (fn [name] (swap! board assoc name 0))
 
      :end-of-game (fn [winner-team] (do (swap! board increase-in-map (:offense winner-team))
                                        (swap! board increase-in-map (:defense winner-team))))}))
@@ -32,8 +32,8 @@
 (defn make-team-info
   []
   (let [team-state (atom {})]
-    ({:register (fn [team position player-name] (swap! team-state assoc-in [team position] player-name))
-      :current-teams (fn [] @team-state)})))
+    {:register (fn [team position player-name] (swap! team-state assoc-in [team position] player-name))
+     :current-teams (fn [] @team-state)}))
 
 (defn make-score-counter
   []
@@ -50,10 +50,14 @@
   [score-event-listener
    player-stats-event-listener]
   (let [score-counter (make-score-counter)
-        game-listener (make-game-listener (fn [] ((:reset score-counter))))]
+        team-info (make-team-info)
+        player-board (make-player-board)
+        game-listener (make-game-listener (fn [] (do ((:reset score-counter))
+                                                    ((:end-of-game player-board) (:black ((:current-teams team-info)))))))]
     (reify
       StatisticsModule
       (goal [this team] (let [new-score ((:goal score-counter) team)]
                           (fire score-event-listener new-score)
                           ((:score-changed game-listener) new-score)))
-      (register [this team position player-name] :todo))))
+      (register [this team position player-name] (do ((:register player-board) player-name)
+                                                     ((:register team-info) team position player-name))))))
