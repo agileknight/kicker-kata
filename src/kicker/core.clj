@@ -27,7 +27,8 @@
     {:register (fn [name] (swap! board assoc name 0))
 
      :end-of-game (fn [winner-team] (do (swap! board increase-in-map (:offense winner-team))
-                                       (swap! board increase-in-map (:defense winner-team))))}))
+                                       (swap! board increase-in-map (:defense winner-team))))
+     :current-high-score (fn [] @board)}))
 
 (defn make-team-info
   []
@@ -53,7 +54,8 @@
         team-info (make-team-info)
         player-board (make-player-board)
         game-listener (make-game-listener (fn [] (do ((:reset score-counter))
-                                                    ((:end-of-game player-board) (:black ((:current-teams team-info)))))))]
+                                                    ((:end-of-game player-board) (:black ((:current-teams team-info))))
+                                                    (fire player-stats-event-listener ((:current-high-score player-board))))))]
     (reify
       StatisticsModule
       (goal [this team] (let [new-score ((:goal score-counter) team)]

@@ -10,6 +10,13 @@
   [stats team]
   (goals stats (take 6 (repeat team))))
 
+(defn register-valid-players
+  [stats]
+  (do (register stats :black :offense "black_offense")
+      (register stats :black :defense "black_defense")
+      (register stats :white :offense "white_offense")
+      (register stats :white :defense "white_defense")))
+
 (defn make-capturer
   []
   (let [events (atom [])]
@@ -52,14 +59,16 @@
 
 (deftest acceptance-test
   (with-fixtures setup "Goal triggers score."
+    (register-valid-players *stats*)
     (goal *stats* :black)
     (goal *stats* :black)
     (is (= [{:black 1 :white 0}
             {:black 2 :white 0}] (latest-events *score-event-capturer*))))
   (with-fixtures setup "New game starts when one team gets 6 goals"
+    (register-valid-players *stats*)
     (goals *stats* (take 7 (repeat :black)))
     (is (= {:black 1 :white 0} (last (latest-events *score-event-capturer*)))))
-  '(with-fixtures setup "Prints player stats after team wins"
+  (with-fixtures setup "Prints player stats after team wins"
     (register *stats* :black :offense "Joe")
     (register *stats* :black :defense "Jack")
     (register *stats* :white :offense "Daniel")
