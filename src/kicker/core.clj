@@ -9,6 +9,22 @@
   "Listens to events."
   (fire [this event]))
 
+(defprotocol RegistrationListener
+  "Listens to registration events."
+  (register [this team position player-name]))
+
+(defprotocol GoalEventListener
+  "Listens to goal events."
+  (goal [this team]))
+
+(defprotocol GameEndListener
+  "Listens to end of game events."
+  (end-of-game [this winner-team]))
+
+(defprotocol TeamInfo
+  "Current team composition."
+  (current-teams [this]))
+
 (defn increase-in-map
   [map key]
   (assoc map key (+ 1 (get map key))))
@@ -20,18 +36,13 @@
 (defn make-player-board
   []
   (let [board (atom {})]
-    {:register (fn [name] (swap! board assoc name 0))
-     :win (fn [name] (swap! board increase-in-map name))
-     }
+    (reify
+      RegistrationListener
+      (register [this team position player-name] (swap! board assoc name 0))
+      GameEndListener
+      (end-of-game [this winner-team] (do (swap! board increase-in-map (:offense winner-team))
+                                          (swap! board increase-in-map (:defense winner-team)))))
     ))
-
-(defprotocol RegistrationListener
-  "Listens to registration events."
-  (register [this team position player-name]))
-
-(defprotocol TeamInfo
-  "Current team composition."
-  (current-teams [this]))
 
 (defn make-team-info
   []
@@ -54,17 +65,15 @@
   [callback]
   {:score-changed (fn [new-score] (if (or (>= (:black new-score) 6) (>= (:white new-score) 6))
                                    (callback)))})
-(defprotocol KickerEventListener
-  "Listens to kicker events and returns the resulting events."
-  (goal [this team]))
 
 (defn make-statistics
   [score-event-listener
    player-stats-event-listener]
   (let [score-counter (make-score-counter score-event-listener)
+
         game-listener (make-game-listener (fn [] ((:reset score-counter))))]
     (reify
-      KickerEventListener
+      GoalEventListener
       (goal [this team] (let [new-score ((:goal score-counter) team)]
                           ((:score-changed game-listener) new-score)
                           [{:type "score" :content new-score}]))
