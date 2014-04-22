@@ -44,9 +44,9 @@
      :current-score (fn [] @score)}))
 
 (defn make-game-listener
-  [callback]
-  {:score-changed (fn [new-score] (if (or (>= (:black new-score) 6) (>= (:white new-score) 6))
-                                   (callback)))})
+  [end-of-game-callback]
+  {:score-changed (fn [new-score] (cond (>= (:black new-score) 6) (end-of-game-callback :black)
+                                       (>= (:white new-score) 6) (end-of-game-callback :white)))})
 
 (defn make-statistics
   [score-event-listener
@@ -54,8 +54,8 @@
   (let [score-counter (make-score-counter)
         team-info (make-team-info)
         player-board (make-player-board)
-        game-listener (make-game-listener (fn [] (do ((:reset score-counter))
-                                                    ((:end-of-game player-board) (:black ((:current-teams team-info))))
+        game-listener (make-game-listener (fn [winning-team] (do ((:reset score-counter))
+                                                    ((:end-of-game player-board) (winning-team ((:current-teams team-info))))
                                                     (fire player-stats-event-listener ((:current-high-score player-board))))))]
     (reify
       StatisticsModule
