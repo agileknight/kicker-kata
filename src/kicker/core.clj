@@ -17,10 +17,6 @@
   [map key]
   (assoc map key (+ 1 (get map key))))
 
-(defn increase-score
-  [score-map team]
-  (increase-in-map score-map team))
-
 (defn make-player-board
   []
   (let [board (atom {})]
