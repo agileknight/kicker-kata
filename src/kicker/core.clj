@@ -76,14 +76,17 @@
   (goal [this team]))
 
 (defn make-statistics
-  [score-event-listener]
+  [score-event-listener
+   player-stats-event-listener]
   (let [score-counter (make-score-counter score-event-listener)
         game-listener (make-game-listener (fn [] ((:reset score-counter))))]
     (reify
       KickerEventListener
       (goal [this team] (let [new-score ((:goal score-counter) team)]
                           ((:score-changed game-listener) new-score)
-                          [{:type "score" :content new-score}])))))
+                          [{:type "score" :content new-score}]))
+      RegistrationListener
+      (register [this team position player-name] :todo))))
 
 (defn parse-goal-event
   [event]

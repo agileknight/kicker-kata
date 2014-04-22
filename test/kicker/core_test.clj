@@ -28,16 +28,23 @@
   (binding [*score-event-capturer* (make-capturer)]
     (f)))
 
+(def ^:dynamic *player-stats-event-captor*)
+
+(defn setup-player-stats-event-captor
+  [f]
+  (binding [*player-stats-event-captor* (make-capturer)]
+    (f)))
+
 (def ^:dynamic *stats*)
 
 (defn setup-statistics-instance
   [f]
-  (binding [*stats* (make-statistics *score-event-capturer*)]
+  (binding [*stats* (make-statistics *score-event-capturer* *player-stats-event-captor*)]
     (f)))
 
 (defn setup
   [f]
-  ((compose-fixtures setup-score-event-capturer setup-statistics-instance) f))
+  ((join-fixtures [setup-score-event-capturer setup-player-stats-event-captor setup-statistics-instance]) f))
 
 (defmacro with-fixtures
   [fixtures doc & body]
@@ -52,11 +59,11 @@
   (with-fixtures setup "New game starts when one team gets 6 goals"
     (goals *stats* (take 7 (repeat :black)))
     (is (= {:black 1 :white 0} (last (latest-events *score-event-capturer*)))))
-  '(testing "Prints player stats after team wins"
-     (let [stats (make-statistics)]
-       (register stats :black :offense "Joe")
-       (register stats :black :defense "Jack")
-       (register stats :white :offnse "Daniel")
-       (register stats :white :defense "Dennis")
-       (is (= {:type "player-ranking" :content {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}}
-              (last (wins-game stats :black)))))))
+  '(with-fixtures setup "Prints player stats after team wins"
+    (register *stats* :black :offense "Joe")
+    (register *stats* :black :defense "Jack")
+    (register *stats* :white :offnse "Daniel")
+    (register *stats* :white :defense "Dennis")
+    (wins-game *stats* :black)
+    (is (= {"Joe" 1 "Jack" 1 "Daniel" 0 "Dennis" 0}
+           (last (latest-events *player-stats-event-captor*))))))
