@@ -26,14 +26,16 @@
   (let [board (atom {})]
     {:register (fn [name] (swap! board assoc name 0))
 
-     :end-of-game (fn [winner-team] (do (swap! board increase-in-map (:offense winner-team))
-                                       (swap! board increase-in-map (:defense winner-team))))
+     :end-of-game (fn [winner-team]
+                    (do (swap! board increase-in-map (:offense winner-team))
+                        (swap! board increase-in-map (:defense winner-team))))
      :current-high-score (fn [] @board)}))
 
 (defn make-team-info
   []
   (let [team-state (atom {})]
-    {:register (fn [team position player-name] (swap! team-state assoc-in [team position] player-name))
+    {:register (fn [team position player-name]
+                 (swap! team-state assoc-in [team position] player-name))
      :current-teams (fn [] @team-state)}))
 
 (defn make-score-counter
@@ -45,8 +47,9 @@
 
 (defn make-game-listener
   [end-of-game-callback]
-  {:score-changed (fn [new-score] (cond (>= (:black new-score) 6) (end-of-game-callback :black)
-                                       (>= (:white new-score) 6) (end-of-game-callback :white)))})
+  {:score-changed (fn [new-score]
+                    (cond (>= (:black new-score) 6) (end-of-game-callback :black)
+                          (>= (:white new-score) 6) (end-of-game-callback :white)))})
 
 (defn make-statistics
   [score-event-listener
@@ -54,13 +57,19 @@
   (let [score-counter (make-score-counter)
         team-info (make-team-info)
         player-board (make-player-board)
-        game-listener (make-game-listener (fn [winning-team] (do ((:reset score-counter))
-                                                    ((:end-of-game player-board) (winning-team ((:current-teams team-info))))
-                                                    (fire player-stats-event-listener ((:current-high-score player-board))))))]
+        game-listener (make-game-listener
+                       (fn [winning-team]
+                         (do (call :reset score-counter)
+                             (call :end-of-game player-board
+                                   (winning-team (call :current-teams team-info)))
+                             (fire player-stats-event-listener
+                                   (call :current-high-score player-board)))))]
     (reify
       StatisticsModule
-      (goal [this team] (do (call :goal score-counter team)
-                            (fire score-event-listener ((:current-score score-counter)))
-                            ((:score-changed game-listener) ((:current-score score-counter)))))
-      (register [this team position player-name] (do ((:register player-board) player-name)
-                                                     ((:register team-info) team position player-name))))))
+      (goal [this team]
+        (do (call :goal score-counter team)
+            (fire score-event-listener (call :current-score score-counter))
+            (call :score-changed game-listener (call :current-score score-counter))))
+      (register [this team position player-name]
+        (do (call :register player-board player-name)
+            (call :register team-info team position player-name))))))
