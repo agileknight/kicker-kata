@@ -13,6 +13,10 @@
   (register [this team position player-name])
   (goal [this team]))
 
+(defmacro call
+  [map key & args]
+  `((~key ~map) ~@args))
+
 (defn increase-in-map
   [map key]
   (assoc map key (+ 1 (get map key))))
@@ -55,7 +59,7 @@
                                                     (fire player-stats-event-listener ((:current-high-score player-board))))))]
     (reify
       StatisticsModule
-      (goal [this team] (do ((:goal score-counter) team)
+      (goal [this team] (do (call :goal score-counter team)
                             (fire score-event-listener ((:current-score score-counter)))
                             ((:score-changed game-listener) ((:current-score score-counter)))))
       (register [this team position player-name] (do ((:register player-board) player-name)
