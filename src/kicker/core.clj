@@ -40,7 +40,8 @@
   []
   (let [score (atom {:black 0 :white 0})]
     {:goal (fn [team] (swap! score increase-in-map team))
-     :reset (fn [] (reset! score {:black 0 :white 0}))}))
+     :reset (fn [] (reset! score {:black 0 :white 0}))
+     :current-score (fn [] @score)}))
 
 (defn make-game-listener
   [callback]
@@ -58,8 +59,8 @@
                                                     (fire player-stats-event-listener ((:current-high-score player-board))))))]
     (reify
       StatisticsModule
-      (goal [this team] (let [new-score ((:goal score-counter) team)]
-                          (fire score-event-listener new-score)
-                          ((:score-changed game-listener) new-score)))
+      (goal [this team] (do ((:goal score-counter) team)
+                            (fire score-event-listener ((:current-score score-counter)))
+                            ((:score-changed game-listener) ((:current-score score-counter)))))
       (register [this team position player-name] (do ((:register player-board) player-name)
                                                      ((:register team-info) team position player-name))))))
