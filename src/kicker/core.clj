@@ -73,3 +73,14 @@
       (register [this team position player-name]
         (do (call :register player-board player-name)
             (call :register team-info team position player-name))))))
+
+(defn make-capturer
+  []
+  (let [events (atom [])]
+    (reify
+      EventListener
+      (fire [this event] (swap! events conj event))
+      EventReader
+      (latest-events [this] (let [result @events]
+                              (reset! events [])
+                              result)))))

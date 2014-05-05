@@ -17,17 +17,6 @@
       (register stats :white :offense "white_offense")
       (register stats :white :defense "white_defense")))
 
-(defn make-capturer
-  []
-  (let [events (atom [])]
-    (reify
-      EventListener
-      (fire [this event] (swap! events conj event))
-      EventReader
-      (latest-events [this] (let [result @events]
-                              (reset! events [])
-                              result)))))
-
 (def ^:dynamic *score-event-capturer*)
 
 (defn setup-score-event-capturer
